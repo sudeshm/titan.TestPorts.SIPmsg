@@ -1,0 +1,714 @@
+/******************************************************************************
+* Copyright (c) 2005, 2014  Ericsson AB
+* All rights reserved. This program and the accompanying materials
+* are made available under the terms of the Eclipse Public License v1.0
+* which accompanies this distribution, and is available at
+* http://www.eclipse.org/legal/epl-v10.html
+*
+* Contributors:
+*   Gabor Szalai - initial implementation and initial documentation
+*   Gergely Futo
+*   Laszlo Skumat
+*   Pinter Norbert
+*   Oliver Ferenc Czerman
+*   Peter Balazs
+*   Koppány Csaba Béla
+*   Kulcsár Endre
+*   Szalai Zsolt
+******************************************************************************/
+module SIPexampleTemplates
+{
+  import from SIPmsg_Types all;
+//  import from SIPexample all;
+
+  modulepar charstring      PX_ETS_LOCAL_USER2;
+  modulepar charstring      PX_ETS_IPADDR2;
+  modulepar integer      PX_ETS_PORT2;
+  modulepar charstring      PX_ETS_LOCAL_USER;
+  modulepar charstring      PX_ETS_IPADDR;
+  modulepar integer      PX_ETS_PORT;
+
+
+group SimpleConstants
+{
+  // SIP name protocol plus version
+  const charstring cg_SIP_NAME_VERSION := "SIP/2.0";
+
+  // SIP name protocol
+  const charstring cg_SIP_NAME := "SIP";
+
+  // SIP version
+  const charstring cg_SIP_VERSION := "2.0";
+
+  // SIP scheme
+  const charstring cg_SIP_SCHEME := "sip";
+
+  // TAG_ID
+  const charstring cg_SIP_TAG_ID := "tag";
+
+  // BRANCH_ID
+  const charstring cg_SIP_BRANCH_ID := "branch";
+
+  // BRANCH_COOKIE
+  const charstring cg_SIP_BRANCH_COOKIE := "z9hG4bK";
+
+  // EXPIRES_ID
+  const charstring cg_SIP_EXPIRES_ID := "expires";
+
+  // MADDR_ID
+  const charstring cg_SIP_MADDR_ID := "maddr";
+
+  // METHOD_ID
+  const charstring cg_SIP_METHOD_ID := "method";
+
+  // RECEIVED_ID
+  const charstring cg_SIP_RECEIVED_ID := "received";
+
+  // TTL_ID
+  const charstring cg_SIP_TTL_ID := "ttl";
+
+  // USER_ID
+  const charstring cg_SIP_USER_ID := "user";
+
+  // SDP name application
+  const charstring cg_SIP_SDP_APPLICATION := "application/sdp";
+
+  // @ (at) sign
+  const charstring cg_SIP_AT := "@";
+
+  // * (wildchard) sign
+  const charstring cg_SIP_WILDCARD := "*";
+
+  // / (slash) sign
+  const charstring cg_SIP_SLASH := "/";
+
+  // < (less than) sign
+  const charstring cg_SIP_LT := "<";
+
+  // > (greater than) sign
+  const charstring cg_SIP_GT := ">";
+
+  // ( (left parenthesis) sign
+  const charstring cg_SIP_LP := " (";
+
+  // ) (right parenthesis) sign
+  const charstring cg_SIP_RP := ") ";
+
+  // Quote sign
+  const charstring cg_SIP_QUOTE := """";
+
+  // %d32 ; US-ASCII SP, space character
+  const charstring cg_SIP_SP := " ";
+
+  // %d09  ; US-ASCII HT, horizontal tab character
+  const charstring cg_SIP_TAB := int2char(9);
+
+  // %d13  ; US-ASCII CR, carriage return character
+  const charstring cg_SIP_CR := int2char(13);
+
+  // %d10  ; US-ASCII LF, line feed character
+  const charstring cg_SIP_LF := int2char(10);
+
+  // CR LF  ; typically the end of a line
+  const charstring cg_SIP_CRLF := cg_SIP_CR & cg_SIP_LF;
+
+  // Default SIP port number : 5060
+  const integer cg_SIP_DEFAULT_SIP_PORT := 5060;
+
+  // Default SIP protocol : UDP
+  const charstring cg_SIP_DEFAULT_SIP_PROT := "UDP";
+
+} //end Group SimpleConstants
+
+  group templates
+  {
+
+
+      template SipUrl desturl:= { scheme := "sip",
+                           userInfo:= { userOrTelephoneSubscriber:= PX_ETS_LOCAL_USER2,
+                                        password:= omit
+                                        },
+                           hostPort:={ host:= PX_ETS_IPADDR2,
+                                       portField:= omit},
+                           urlParameters:= omit,
+                           headers:= omit
+                         };
+
+    template CallId callid := { fieldName:=CALL_ID_E, callid:="9341AE62-BA3C-49DF-B937-0D967652848A@" & PX_ETS_IPADDR};
+    template CSeq cseq := { fieldName:= CSEQ_E, seqNumber:=1, method:="INVITE"};
+    template From fromfield:= { fieldName:= FROM_E,
+                            addressField:={nameAddr:={ displayName:= PX_ETS_LOCAL_USER,
+                                                       addrSpec:={ scheme := "sip",
+                           userInfo:= { userOrTelephoneSubscriber:= PX_ETS_LOCAL_USER,
+                                        password:= omit
+                                        },
+                           hostPort:={ host:= PX_ETS_IPADDR ,
+                                       portField:= omit},
+                           urlParameters:= omit,
+                           headers:= omit
+                                                                 }
+                                                      }
+                                          },
+                            fromParams:=omit
+                            };
+    template To tofield:={ fieldName:= TO_E,
+                            addressField:={nameAddr:={ displayName:= PX_ETS_LOCAL_USER2,
+                                                       addrSpec:={ scheme := "sip",
+                           userInfo:= { userOrTelephoneSubscriber:= PX_ETS_LOCAL_USER2,
+                                        password:= omit
+                                        },
+                           hostPort:={ host:= PX_ETS_IPADDR2,
+                                       portField:= omit},
+                           urlParameters:= omit,
+                           headers:= omit
+                                                                 }
+                                                      }
+                                          },
+                            toParams:=omit
+                            };
+    template Via T_via:={fieldName:= VIA_E,
+                  viaBody:={
+				    {sentProtocol := {
+					protocolName := cg_SIP_NAME,
+					protocolVersion := cg_SIP_VERSION,
+					transport := "TCP"
+				    },
+				     sentBy := {host:=PX_ETS_IPADDR, portField:=PX_ETS_PORT},
+				     viaParams:= omit
+				    },
+                                    {sentProtocol := {
+					protocolName := cg_SIP_NAME,
+					protocolVersion := cg_SIP_VERSION,
+					transport := "TCP"
+				    },
+				     sentBy := {host:=PX_ETS_IPADDR, portField:=PX_ETS_PORT},
+				     viaParams:= omit
+				    }
+                           }
+                  };
+    template Contact T_contact:={fieldName:= CONTACT_E,
+            contactBody:={contactAddresses:={
+             {
+                           addressField:={nameAddr:={ displayName:= PX_ETS_LOCAL_USER,
+                                                       addrSpec:={ scheme := "sip",
+                           userInfo:= { userOrTelephoneSubscriber:= PX_ETS_LOCAL_USER,
+                                        password:= omit
+                                        },
+                           hostPort:={ host:= PX_ETS_IPADDR,
+                                       portField:= omit},
+                           urlParameters:= omit,
+                           headers:= omit
+                                                                 }
+                                                      }
+                                          },
+                           contactParams:= omit             
+             }
+            }}};
+
+    template PDU_SIP_Request INVITE_Request_s_1:={
+		    requestLine	:={
+				  method := NOTIFY_E,
+				  requestUri := desturl,
+				  sipVersion := cg_SIP_NAME_VERSION
+		      },
+		    msgHeader :={
+				  callId := callid,
+				  contact := T_contact,
+				  cSeq := cseq,
+				  fromField := fromfield,
+				  toField := tofield,
+				  via := T_via,
+        maxForwards :={fieldName := MAX_FORWARDS_E, forwards :=  70},
+        x_FCI := omit,
+        x_CHGInfo := omit,
+        x_CHGDelay := omit, 
+        recv_Info := omit, 
+        p_Service_Notification := omit, 
+        p_Service_Indication := omit, 
+        p_preferred_service := omit, 
+        x_Carrier_Info := omit, 
+        x_AUT := omit, 
+        target_dialog := omit,
+        geolocation := omit, 
+        geolocation_routing := omit, 
+        geolocation_error := omit, 
+        feature_caps := omit,
+        info_Package := omit, 
+        p_Area_Info := omit, 
+        p_asserted_service := omit,
+        accept := omit,
+        acceptResourcePriority := omit,
+        resourcePriority := omit,
+          acceptEncoding := omit,
+          acceptLanguage := omit,
+          alertInfo := omit,
+          allow  := omit,
+          authenticationInfo := omit,
+          authorization := omit,
+          callInfo := omit,
+          contentDisposition := omit,
+          contentType := {
+              fieldName := CONTENT_TYPE_E,
+              mediaType:= "application/sdp"
+            },
+          contentLanguage := omit,
+//          contentLength := omit,
+          contentLength := {fieldName := CONTENT_LENGTH_E, len := 0},
+          contentEncoding := omit,
+          date := omit,
+          errorInfo  := omit,
+          expires := omit,
+          inReplyTo := omit,
+          mimeVersion := omit,
+          minExpires := omit,
+          organization := omit,
+          priority := omit,
+          proxyAuthenticate := omit,
+          proxyAuthorization := omit,
+          proxyRequire := omit,
+          recordRoute := omit,
+          replyTo := omit,
+          require := omit,
+          retryAfter := omit,
+          route := omit,
+          server := {fieldName := SERVER_E, serverBody := {"Server:PoC-client/OMA1.0"}},
+          subject := omit,
+          supported := omit,
+          timestamp := omit,
+          unsupported := omit,
+          userAgent := {fieldName := USER_AGENT_E, userAgentBody := {"SJLabs-SJPhone/1.0"}},
+          warning := omit,
+          wwwAuthenticate := omit,
+          undefinedHeader_List := omit,
+          privacy:=omit,
+          passertedID:=omit,
+          ppreferredID:=omit,
+          rack:=omit,
+          rseq:=omit,
+          reason:=omit,
+          diversion:=omit,
+
+alert_mode:=omit,
+answer_mode:=omit,
+p_alerting_mode:=omit,
+p_answer_state:=omit,
+p_served_user:=omit,
+priv_answer_mode:=omit,
+p_profile_key:=omit,
+p_user_database:=omit,
+refer_sub:={fieldName :=REFER_SUB_E, refer_sub_value:="nade",refer_sub_param:=omit},//omit,
+
+
+          session_id:=omit,
+          accept_contact:=omit,
+          p_DCS_trace_pty_id:=omit,
+          p_DCS_OSPS:=omit,
+          p_DCS_billing_info:=omit,
+          p_DCS_LAES:=omit,
+          p_DCS_redirect:=omit,
+          p_Early_Media := omit,
+          p_media_auth:=omit,
+          reject_contact:=omit,
+          refer_to:=omit,
+          replaces:=omit,
+          request_disp:=omit,
+          security_client:=omit,
+          security_verify:=omit,
+          service_route:=omit,
+          path:=omit,
+          security_server:=omit,
+          join:=omit,
+          referred_by:=omit,
+          sip_ETag:=omit,
+          sip_If_Match:=omit,
+          historyInfo:={fieldName := HISTORY_INFO_E,
+              hi_entries:={{nameAddr:={ displayName:= PX_ETS_LOCAL_USER,
+                                                   addrSpec:={ scheme := "sipka",
+                                                   userInfo:= { userOrTelephoneSubscriber:= PX_ETS_LOCAL_USER,password:= omit},
+                                                   hostPort:={ host:= PX_ETS_IPADDR ,portField:= omit},
+                                                               urlParameters:= omit,
+                                                              headers:= omit
+                                                  }},
+                                     hi_params:={{id:="p1",paramValue:="a1"},{id:="p2",paramValue:="a2"}}
+                                 }}
+          },
+
+
+
+          event:={fieldName := EVENT_E,
+                  event_type:= {event_package:="pack",
+                                event_templates:={"t1","t2"}
+                                },
+                  event_params:={{id:="p1",paramValue:="a1"},{id:="p2",paramValue:="a2"}}
+                  },
+          allow_events:={fieldName := ALLOW_EVENTS_E,
+                  events:= {  {event_package:="pack",
+                                event_templates:={"t1","t2"}},
+                                {event_package:="pack3",
+                                event_templates:={"t3","t5"}}
+                           }
+                  },
+          subscription_state:={fieldName := SUBSCRIPTION_STATE_E,
+                  substate_value:= "active",
+                  subexp_params:=omit //{{id:="reason",paramValue:="probation"},{id:="expires",paramValue:="22"}}
+                  },
+
+        p_access_network_info:={fieldName := P_ACCESS_NETWORK_INFO,
+                  access_net_specs := {{
+                    access_type:= "3GPP-GERAN",
+                    access_info:={{id:="cgi-3gpp",paramValue:="probation"},{id:="utran-cell-id-3gpp",paramValue:="\"hali ho1\""}}
+                  },
+                  {
+                    access_type:= "3GPP-GERAN",
+                    access_info:={{id:="cgi-3gpp",paramValue:="probation"},{id:="utran-cell-id-3gpp",paramValue:="\"hali ho2\""}}
+                    }}
+                  },
+          p_associated_uri:={fieldName := P_ASSOCIATED_URI,
+                  p_assoc_uris:= {
+                                    {p_asso_uri:={ displayName:= PX_ETS_LOCAL_USER,
+                                                   addrSpec:={ scheme := "sip",
+                                                   userInfo:= { userOrTelephoneSubscriber:= PX_ETS_LOCAL_USER,password:= omit},
+                                                   hostPort:={ host:= PX_ETS_IPADDR ,portField:= omit},
+                                                               urlParameters:= omit,
+                                                              headers:= omit
+                                                  }},
+                                     ai_params:=omit},
+                                    {p_asso_uri:={ displayName:= PX_ETS_LOCAL_USER,
+                                                   addrSpec:={ scheme := "sipka",
+                                                   userInfo:= { userOrTelephoneSubscriber:= PX_ETS_LOCAL_USER,password:= omit},
+                                                   hostPort:={ host:= PX_ETS_IPADDR ,portField:= omit},
+                                                               urlParameters:= omit,
+                                                              headers:= omit
+                                                  }},
+                                     ai_params:={{id:="p1",paramValue:="a1"},{id:="p2",paramValue:="a2"}}
+                                 }
+                  }},
+          p_called_party_id:={fieldName := P_CALLED_PARTY_ID,
+                  called_pty_id:= { displayName:= PX_ETS_LOCAL_USER,
+                                                   addrSpec:={ scheme := "sip",
+                                                   userInfo:= { userOrTelephoneSubscriber:= PX_ETS_LOCAL_USER,password:= omit},
+                                                   hostPort:={ host:= PX_ETS_IPADDR ,portField:= omit},
+                                                               urlParameters:= omit,
+                                                              headers:= omit
+                                                  }},
+                  cpid_param:=omit //{{id:="cgi-3gpp",paramValue:="probation"},{id:="utran-cell-id-3gpp",paramValue:="\"hali ho\""}}
+                  },
+
+          p_charging_function_address:={fieldName := P_CHARGING_FUNCTION_ADDRESS,
+                  charge_addr_params:={{id:="ccf",paramValue:="ejnye"}}
+                  },
+
+          p_charging_vector:={fieldName := P_CHARGING_VECTOR,
+                  icid_value:= "bejnye",
+                  charge_params:={{id:="cgi-3gpp",paramValue:="probation"},{id:="utran-cell-id-3gpp",paramValue:="\"hali ho\""}}
+                  },
+          p_visited_network_id:={fieldName := P_VISITED_NETWORK_ID,
+                    vnetworks:={{network_id:= "Net1",
+                     network_par:=omit//{{id:="cgi-3gpp",paramValue:="probation"},{id:="utran-cell-id-3gpp",paramValue:="\"hali ho\""}}
+                    },
+                    {network_id:= "\"Mobil a buli\"",
+                     network_par:={{id:="cgi-3gpp",paramValue:="probation"},{id:="utran-cell-id-3gpp",paramValue:="\"hali ho\""}}
+                    }
+                    }
+                  },
+          session_expires:={fieldName := SESSION_EXPIRES_E,
+                  deltaSec:= "123",
+                  se_params:=omit//{{id:="cgi-3gpp",paramValue:="probation"},{id:="utran-cell-id-3gpp",paramValue:="\"hali ho\""}}
+                  },
+          min_SE:={fieldName := MIN_SE_E,
+                  deltaSec:= "231",
+                  params:=omit//{{id:="cgi-3gpp",paramValue:="probation"},{id:="utran-cell-id-3gpp",paramValue:="\"hali ho\""}}
+                  }
+		    },
+		    messageBody := "haliho",
+		    payload := omit
+		}
+    template PDU_SIP_Response T_trying:={
+      statusLine:={ sipVersion:=?,
+                    statusCode:= 100,
+                    reasonPhrase:=?
+                  },
+      msgHeader:=?,
+      messageBody:=*,
+      payload:=*
+    }
+
+    template PDU_SIP_Response T_ringing:={
+      statusLine:={ sipVersion:=?,
+                    statusCode:= 180,
+                    reasonPhrase:=?
+                  },
+      msgHeader:=?,
+      messageBody:=*,
+      payload:=*
+    }
+    template PDU_SIP_Response T_OK_r:={
+      statusLine:={ sipVersion:=?,
+                    statusCode:= 200,
+                    reasonPhrase:=?
+                  },
+      msgHeader:=?,
+      messageBody:=*,
+      payload:=*
+    }
+
+
+template PDU_SIP_Request INVITE_Request_s_2:={
+    requestLine := {
+        method := INVITE_E ,
+        requestUri := {
+            scheme := "sip",
+            userInfo := {
+                userOrTelephoneSubscriber := "+14600000000000",
+                password := omit
+            },
+            hostPort := {
+                host := "164.48.133.21",
+                portField := omit
+            },
+            urlParameters := omit,
+            headers := omit
+        },
+        sipVersion := "SIP/2.0"
+    },
+  msgHeader := {
+        x_FCI := omit, 
+        x_CHGInfo := omit ,
+        x_CHGDelay := omit, 
+        recv_Info := omit, 
+        p_Service_Notification := omit, 
+        p_Service_Indication := omit, 
+        p_preferred_service := omit, 
+        x_Carrier_Info := omit, 
+        x_AUT := omit, 
+        target_dialog := omit,
+        geolocation := omit, 
+        geolocation_routing := omit, 
+        geolocation_error := omit, 
+        feature_caps := omit,
+        info_Package := omit, 
+        p_Area_Info := omit, 
+        p_asserted_service := omit,
+        accept := omit,
+        acceptResourcePriority := omit,
+        resourcePriority := omit,
+        accept_contact := omit,
+        acceptEncoding := omit,
+        acceptLanguage := omit,
+        alertInfo := omit,
+        allow := omit,
+        allow_events := omit,
+        authenticationInfo := omit,
+        authorization := omit,
+        callId := {
+            fieldName := CALL_ID_E ,
+            callid := "9341AE62-BA3C-49DF-B937-0D967652848A@164.48.130.58"
+        },
+        callInfo := omit,
+        contact := {
+            fieldName := CONTACT_E ,
+            contactBody := {
+                contactAddresses := {
+                    {
+                        addressField := {
+                            nameAddr := {
+                                displayName := "Sinisa Marovic",
+                                addrSpec := {
+                                    scheme := "sip",
+                                    userInfo := {
+                                        userOrTelephoneSubscriber := "+385913654624",
+                                        password := omit
+                                    },
+                                    hostPort := {
+                                        host := "164.48.130.58",
+                                        portField := omit
+                                    },
+                                    urlParameters := omit,
+                                    headers := omit
+                                }
+                            }
+                        },
+                        contactParams := omit
+                    }
+                }
+            }
+        },
+        contentDisposition := omit,
+        contentEncoding := omit,
+        contentLanguage := omit,
+        contentLength := omit,
+        contentType := {
+            fieldName := CONTENT_TYPE_E ,
+            mediaType := "multipart/mixed;boundary=IBdkTtp50GZnROVflqy16AHXm"
+        },
+        cSeq := {
+            fieldName := CSEQ_E ,
+            seqNumber := 1,
+            method := "INVITE"
+        },
+        date := omit,
+        diversion := omit,
+        errorInfo := omit,
+        event := omit,
+        expires := omit,
+        fromField := {
+            fieldName := FROM_E ,
+            addressField := {
+                nameAddr := {
+                    displayName := "Sinisa Marovic",
+                    addrSpec := {
+                        scheme := "sip",
+                        userInfo := {
+                            userOrTelephoneSubscriber := "+385913654624",
+                            password := omit
+                        },
+                        hostPort := {
+                            host := "AQUIS195.ERICSSON.SE",
+                            portField := omit
+                        },
+                        urlParameters := omit,
+                        headers := omit
+                    }
+                }
+            },
+            fromParams := {
+                {
+                    id := "tag",
+                    paramValue := "0.859834"
+                }
+            }
+        },
+        inReplyTo := omit,
+        join := omit,
+        maxForwards := {
+            fieldName := MAX_FORWARDS_E ,
+            forwards := 70
+        },
+        mimeVersion := omit,
+        minExpires := omit,
+        min_SE := omit,
+        organization := omit,
+        p_access_network_info := omit,
+        passertedID := omit,
+        p_associated_uri := omit,
+        p_called_party_id := omit,
+        p_charging_function_address := omit,
+        p_charging_vector := omit,
+        p_DCS_trace_pty_id := omit,
+        p_DCS_OSPS := omit,
+        p_DCS_billing_info := omit,
+        p_DCS_LAES := omit,
+        p_DCS_redirect := omit,
+        p_Early_Media := omit,
+        p_media_auth := omit,
+        ppreferredID := omit,
+        p_visited_network_id := omit,
+        path := omit,
+        priority := omit,
+        privacy := omit,
+        proxyAuthenticate := omit,
+        proxyAuthorization := omit,
+        proxyRequire := omit,
+        rack := omit,
+        rseq := omit,
+        reason := omit,
+        recordRoute := omit,
+        reject_contact := omit,
+        refer_to := omit,
+        referred_by := omit,
+        replyTo := omit,
+        replaces := omit,
+        require := omit,
+        request_disp := omit,
+        retryAfter := omit,
+        route := omit,
+        security_client := omit,
+        security_server := omit,
+        security_verify := omit,
+        session_expires := omit,
+        historyInfo:=omit,
+        server := omit,
+        service_route := omit,
+        sip_ETag := omit,
+        sip_If_Match := omit,
+        subject := omit,
+        subscription_state := omit,
+        supported := {
+            fieldName := SUPPORTED_E,
+            optionsTags := {
+                "100rel"
+            }
+        },
+        timestamp := omit,
+        toField := {
+            fieldName := TO_E ,
+            addressField := {
+                nameAddr := {
+                    displayName := "Sinisa Marovic PSTN",
+                    addrSpec := {
+                        scheme := "sip",
+                        userInfo := {
+                            userOrTelephoneSubscriber := "+14600000000000",
+                            password := omit
+                        },
+                        hostPort := {
+                            host := "164.48.133.21",
+                            portField := omit
+                        },
+                        urlParameters := omit,
+                        headers := omit
+                    }
+                }
+            },
+            toParams := omit
+        },
+        unsupported := omit,
+        userAgent := {
+            fieldName := USER_AGENT_E ,
+            userAgentBody := {
+                "SJLabs-SJPhone/1.0"
+            }
+        },
+        via := {
+            fieldName := VIA_E ,
+            viaBody := {
+                {
+                    sentProtocol := {
+                        protocolName := "SIP",
+                        protocolVersion := "2.0",
+                        transport := "TCP"
+                    },
+                    sentBy := {
+                        host := "AQUIS195.ERICSSON.SE",
+                        portField := 5060
+                    },
+                    viaParams := {
+                        {
+                            id := "branch",
+                            paramValue := "z9hG4bK0.859834"
+                        }
+                    }
+                }
+            }
+        },
+        warning := omit,
+        wwwAuthenticate := omit,
+        undefinedHeader_List := omit,
+alert_mode:=omit,
+answer_mode:=omit,
+p_alerting_mode:=omit,
+p_answer_state:=omit,
+priv_answer_mode:=omit,
+refer_sub:=omit,
+p_served_user:=omit,
+p_profile_key:=omit,
+p_user_database:=omit,
+session_id:=omit
+
+    },
+    messageBody := "--IBdkTtp50GZnROVflqy16AHXm\r\nContent-Type: application/SDP\r\n\r\nv=0\r\no=- 3283847141 1 IN IP4 164.48.130.58\r\ns=-\r\nc=IN IP4 164.48.130.58\r\nt=0 0\r\nm=audio 16384 RTP/AVP 0\r\na=rtpmap:0 PCMU/8000\r\n\r\n--IBdkTtp50GZnROVflqy16AHXm\r\nContent-Type: application/ISUP;version=ITU-T92+;base=itu-t92+\r\nContent-Disposition: signal;handling=optional\r\n\r\n" & char(0, 0, 0, 1) & "\b(" & char(0, 0, 0, 0) & "\n" & char(0, 0, 0, 3) & char(0, 0, 0, 2) & char(0, 0, 0, 0) & "\t" & char(0, 0, 0, 4) & char(0, 0, 0, 144) & "A" & char(0, 0, 0, 6) & "\a\b" & char(0, 0, 0, 0) & char(0, 0, 0, 5) & char(0, 0, 0, 16) & "\r\n--IBdkTtp50GZnROVflqy16AHXm--",
+    payload := omit
+}
+
+}
+}with {extension "version R13C"}

@@ -1,0 +1,41 @@
+/******************************************************************************
+* Copyright (c) 2005, 2014  Ericsson AB
+* All rights reserved. This program and the accompanying materials
+* are made available under the terms of the Eclipse Public License v1.0
+* which accompanies this distribution, and is available at
+* http://www.eclipse.org/legal/epl-v10.html
+*
+* Contributors:
+*   Gabor Szalai - initial implementation and initial documentation
+*   Gergely Futo
+*   Laszlo Skumat
+*   Pinter Norbert
+*   Oliver Ferenc Czerman
+*   Peter Balazs
+*   Koppány Csaba Béla
+*   Kulcsár Endre
+*   Szalai Zsolt
+******************************************************************************/
+//
+//  File:               SIPmsg_PortType.ttcn
+//  Rev:                R12D
+//  Prodnr:             CNL 113 319
+//  Reference:          RFC3261, RFC2806, RFC2976, RFC3262, RFC3311, RFC3323, 
+//                      RFC3325, RFC3326, RFC3265, RFC3455, RFC4244
+//                      IETF Draft draft-ietf-dip-session-timer-15.txt,
+//                      IETF Draft draft-levy-sip-diversion-08.txt
+
+module SIPmsg_PortType
+{
+  import from SIPmsg_Types all;
+  
+  type SIP_address_type address;
+
+  type port SIPmsg_PT message {
+      in ASP_SIP_error
+      inout PDU_SIP_Request, PDU_SIP_Response, PDU_SIP_Raw,
+            ASP_SIP_Request, ASP_SIP_Response, ASP_SIP_Raw
+      out ASP_SIP_open, ASP_SIP_close
+  } with {extension "address"}
+
+}with {extension "version R12D"}
